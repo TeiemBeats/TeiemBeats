@@ -1,0 +1,4 @@
+#include <dlfcn.h>
+#include <iostream>
+#include "pluginterfaces/base/ipluginbase.h"
+int main(int argc,char** argv){if(argc!=2)return 2;auto* module=dlopen(argv[1],RTLD_NOW|RTLD_LOCAL);if(!module){std::cerr<<dlerror()<<'\n';return 1;}using Entry=bool(*)(void*);using Exit=bool(*)();using Factory=Steinberg::IPluginFactory*(*)();auto entry=reinterpret_cast<Entry>(dlsym(module,"ModuleEntry"));auto exit=reinterpret_cast<Exit>(dlsym(module,"ModuleExit"));auto get=reinterpret_cast<Factory>(dlsym(module,"GetPluginFactory"));if(!entry||!exit||!get||!entry(module))return 1;auto* f=get();if(!f||f->countClasses()<1)return 1;Steinberg::PFactoryInfo info{};if(f->getFactoryInfo(&info)!=0)return 1;std::cout<<"Loaded VST3: "<<info.vendor<<", "<<f->countClasses()<<" classes\n";for(int i=0;i<f->countClasses();++i){Steinberg::PClassInfo c{};if(f->getClassInfo(i,&c)!=0)return 1;std::cout<<c.name<<" / "<<c.category<<'\n';}f->release();exit();dlclose(module);return 0;}

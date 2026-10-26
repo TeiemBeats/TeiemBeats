@@ -1,0 +1,27 @@
+name: Windows VST3
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get pinned JUCE
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch 8.0.12 https://github.com/juce-framework/JUCE.git ../dependencies/JUCE
+          if ((git -C ../dependencies/JUCE rev-parse HEAD) -ne '29396c22c93392d6738e021b83196283d6e4d850') { throw 'Unexpected JUCE revision' }
+      - name: Configure
+        run: cmake -S . -B build -A x64 -DJUCE_PATH=${{ github.workspace }}/../dependencies/JUCE
+      - name: Build
+        run: cmake --build build --config Release --parallel 4
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Teiem-TG-Mastering-Windows-x64-VST3
+          path: build/TeiemTG_artefacts/Release/VST3/Teiem TG Mastering.vst3
+          if-no-files-found: error
