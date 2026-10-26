@@ -26,3 +26,5 @@ endif()
 if(WIN32)
  add_test(NAME editor_render COMMAND processor_tests --ui)
 endif()
+
+add_subdirectory(VocaMAX)

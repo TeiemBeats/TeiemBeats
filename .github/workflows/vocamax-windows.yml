@@ -1,0 +1,38 @@
+name: VocaMAX Windows VST3
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get pinned JUCE
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch 8.0.12 https://github.com/juce-framework/JUCE.git ../dependencies/JUCE
+          if ($LASTEXITCODE -ne 0) { throw 'JUCE checkout failed' }
+          if ((git -C ../dependencies/JUCE rev-parse HEAD) -ne '29396c22c93392d6738e021b83196283d6e4d850') { throw 'Unexpected JUCE revision' }
+      - name: Configure Windows x64
+        run: cmake -S . -B build -A x64 -DJUCE_PATH=${{ github.workspace }}/../dependencies/JUCE
+      - name: Build VocaMAX and tests
+        run: cmake --build build --config Release --target VocaMAX_VST3 vocamax_dsp_tests vocamax_processor_tests --parallel 4
+      - name: Test audio, state and native editor
+        run: ctest --test-dir build -C Release -R VocaMAX_ --output-on-failure
+      - name: Package Mixcraft installer
+        shell: pwsh
+        run: |
+          $package = 'build/VocaMAX-Windows-x64-Package'
+          New-Item -ItemType Directory -Force -Path $package | Out-Null
+          Copy-Item -Recurse 'build/VocaMAX/VocaMAX_artefacts/Release/VST3/VocaMAX.vst3' $package
+          Copy-Item 'VocaMAX/install/Install-VocaMAX.cmd','VocaMAX/install/install.ps1','VocaMAX/README.md' $package
+          Copy-Item (Join-Path $env:TEMP 'VocaMAX-editor.png') (Join-Path $package 'VocaMAX-preview.png')
+          $binary = Join-Path $package 'VocaMAX.vst3/Contents/x86_64-win/VocaMAX.vst3'
+          if (!(Test-Path $binary)) { throw 'Windows VST3 binary missing' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VocaMAX-Windows-x64-Installer
+          path: build/VocaMAX-Windows-x64-Package
+          if-no-files-found: error

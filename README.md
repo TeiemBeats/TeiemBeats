@@ -1,4 +1,12 @@
-# Teiem TG Mastering
+# Mark33s Beats Labs — VST3 Plugins
+
+## VocaMAX for Mixcraft 10 Pro Studio
+
+[Windows installer builds](https://github.com/TeiemBeats/TeiemBeats/actions/workflows/vocamax-windows.yml) · [VocaMAX installation and controls](VocaMAX/README.md) · [Interface preview](VocaMAX/Assets/preview.png)
+
+Open a successful **VocaMAX Windows VST3** run, download **VocaMAX-Windows-x64-Installer**, extract it, and double-click **Install-VocaMAX.cmd**. Add the printed VST3 folder in Mixcraft and rescan. The installer artifact exists only after its Windows build passes.
+
+## Teiem TG Mastering
 
 Native stereo VST3 mastering plugin built with JUCE 8.0.12. The supplied reference image is embedded as the faceplate, with interactive host-automatable controls, output and gain-reduction meters, and session recall.
 
