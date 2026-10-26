@@ -36,3 +36,9 @@ jobs:
           name: VocaMAX-Windows-x64-Installer
           path: build/VocaMAX-Windows-x64-Package
           if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VocaMAX-Windows-x64-VST3-Manual-Install
+          path: build/VocaMAX/VocaMAX_artefacts/Release/VST3/VocaMAX.vst3
+          if-no-files-found: error
